@@ -1,0 +1,877 @@
+openapi: 3.1.0
+info:
+  title: OrderFlow API
+  description: 'Мастерская корпусной мебели: заявка → конструкция изделия → смета. Демо, данные вымышленные.'
+  version: 0.3.1
+paths:
+  /api/health:
+    get:
+      tags:
+      - service
+      summary: Health
+      operationId: health_api_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/materials:
+    get:
+      tags:
+      - materials
+      summary: Materials
+      operationId: materials_api_materials_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/MaterialOut'
+                type: array
+                title: Response Materials Api Materials Get
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/requests:
+    get:
+      tags:
+      - requests
+      summary: List Requests
+      operationId: list_requests_api_requests_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RequestSummary'
+                type: array
+                title: Response List Requests Api Requests Get
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    post:
+      tags:
+      - requests
+      summary: Create Request
+      description: 'Создать заявку. Текст разбирается сразу: найденные поля приходят с источником
+
+        `text` и `confirmed=false`.'
+      operationId: create_request_api_requests_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestOut'
+        '422':
+          description: Данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/requests/{request_id}:
+    get:
+      tags:
+      - requests
+      summary: Get Request
+      operationId: get_request_api_requests__request_id__get
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestOut'
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/requests/{request_id}/fields/{key}:
+    put:
+      tags:
+      - requests
+      summary: Update Field
+      description: 'Подтвердить или поправить поле. То же значение — подтверждение с сохранением
+
+        источника; другое значение — источник `human`.'
+      operationId: update_field_api_requests__request_id__fields__key__put
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      - name: key
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/FieldKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestOut'
+        '422':
+          description: Данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Недопустимо в текущем статусе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/requests/{request_id}/transition:
+    post:
+      tags:
+      - requests
+      summary: Transition
+      description: Перевести заявку в статус `parsed` или `sent`. Сервер проверяет условия.
+      operationId: transition_api_requests__request_id__transition_post
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestOut'
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Недопустимо в текущем статусе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/requests/{request_id}/design:
+    put:
+      tags:
+      - design
+      summary: Save Design
+      description: 'Сохранить параметры шкафа, получить спецификацию. Статус → `designed`,
+
+        прежняя смета удаляется.'
+      operationId: save_design_api_requests__request_id__design_put
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignParamsIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignOut'
+        '422':
+          description: Данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Недопустимо в текущем статусе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    get:
+      tags:
+      - design
+      summary: Get Design
+      operationId: get_design_api_requests__request_id__design_get
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignOut'
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/requests/{request_id}/estimate:
+    post:
+      tags:
+      - estimate
+      summary: Calculate Estimate
+      description: Посчитать смету по сохранённой конструкции и текущим ценам. Статус → `estimated`.
+      operationId: calculate_estimate_api_requests__request_id__estimate_post
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateOut'
+        '422':
+          description: Данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Недопустимо в текущем статусе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    get:
+      tags:
+      - estimate
+      summary: Get Estimate
+      operationId: get_estimate_api_requests__request_id__estimate_get
+      parameters:
+      - name: request_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Request Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateOut'
+        '422':
+          description: Неверный запрос или данные не проходят проверку
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    DesignOut:
+      properties:
+        request_id:
+          type: integer
+          title: Request Id
+        params:
+          $ref: '#/components/schemas/DesignParamsIn'
+        inner_width_mm:
+          type: integer
+          title: Inner Width Mm
+        parts:
+          items:
+            $ref: '#/components/schemas/PartOut'
+          type: array
+          title: Parts
+        hardware:
+          items:
+            $ref: '#/components/schemas/HardwareOut'
+          type: array
+          title: Hardware
+      type: object
+      required:
+      - request_id
+      - params
+      - inner_width_mm
+      - parts
+      - hardware
+      title: DesignOut
+    DesignParamsIn:
+      properties:
+        width_mm:
+          type: integer
+          maximum: 10000.0
+          minimum: 1.0
+          title: Width Mm
+        height_mm:
+          type: integer
+          maximum: 10000.0
+          minimum: 1.0
+          title: Height Mm
+        depth_mm:
+          type: integer
+          maximum: 10000.0
+          minimum: 1.0
+          title: Depth Mm
+        thickness_mm:
+          type: integer
+          title: Thickness Mm
+          default: 16
+        shelves:
+          type: integer
+          minimum: 0.0
+          title: Shelves
+          default: 0
+        doors:
+          type: integer
+          minimum: 0.0
+          title: Doors
+          default: 0
+        back_panel:
+          type: boolean
+          title: Back Panel
+          default: true
+        board_code:
+          type: string
+          title: Board Code
+          default: LDSP16-WHITE
+        edge_code:
+          type: string
+          title: Edge Code
+          default: EDGE04-WHITE
+        back_code:
+          type: string
+          title: Back Code
+          default: HDF3-WHITE
+        handle_code:
+          type: string
+          title: Handle Code
+          default: HW-HANDLE
+      type: object
+      required:
+      - width_mm
+      - height_mm
+      - depth_mm
+      title: DesignParamsIn
+    EstimateLineOut:
+      properties:
+        kind:
+          type: string
+          title: Kind
+        material_code:
+          type: string
+          title: Material Code
+        name:
+          type: string
+          title: Name
+        unit:
+          type: string
+          title: Unit
+        net_quantity:
+          type: string
+          title: Net Quantity
+        waste_factor:
+          type: string
+          title: Waste Factor
+        quantity:
+          type: string
+          title: Quantity
+        price_kop:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Price Kop
+        price_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Price Date
+        amount_kop:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Amount Kop
+      type: object
+      required:
+      - kind
+      - material_code
+      - name
+      - unit
+      - net_quantity
+      - waste_factor
+      - quantity
+      - price_kop
+      - price_date
+      - amount_kop
+      title: EstimateLineOut
+    EstimateOut:
+      properties:
+        request_id:
+          type: integer
+          title: Request Id
+        lines:
+          items:
+            $ref: '#/components/schemas/EstimateLineOut'
+          type: array
+          title: Lines
+        totals_by_kind:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Totals By Kind
+        total_kop:
+          type: integer
+          title: Total Kop
+        total_formatted:
+          type: string
+          title: Total Formatted
+        complete:
+          type: boolean
+          title: Complete
+        warnings:
+          items:
+            type: string
+          type: array
+          title: Warnings
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - request_id
+      - lines
+      - totals_by_kind
+      - total_kop
+      - total_formatted
+      - complete
+      - warnings
+      - created_at
+      title: EstimateOut
+    FieldKey:
+      type: string
+      enum:
+      - product_type
+      - width_mm
+      - height_mm
+      - depth_mm
+      - shelves
+      - doors
+      - client_name
+      - phone
+      - email
+      title: FieldKey
+    FieldOut:
+      properties:
+        key:
+          $ref: '#/components/schemas/FieldKey'
+        label:
+          type: string
+          title: Label
+        value:
+          type: string
+          title: Value
+        source:
+          $ref: '#/components/schemas/FieldSource'
+        confirmed:
+          type: boolean
+          title: Confirmed
+        fragment:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Fragment
+        required:
+          type: boolean
+          title: Required
+      type: object
+      required:
+      - key
+      - label
+      - value
+      - source
+      - confirmed
+      - fragment
+      - required
+      title: FieldOut
+    FieldSource:
+      type: string
+      enum:
+      - text
+      - human
+      title: FieldSource
+    FieldUpdate:
+      properties:
+        value:
+          type: string
+          maxLength: 255
+          title: Value
+      type: object
+      required:
+      - value
+      title: FieldUpdate
+    HardwareOut:
+      properties:
+        material_code:
+          type: string
+          title: Material Code
+        name:
+          type: string
+          title: Name
+        qty:
+          type: integer
+          title: Qty
+      type: object
+      required:
+      - material_code
+      - name
+      - qty
+      title: HardwareOut
+    Health:
+      properties:
+        status:
+          type: string
+          title: Status
+        parser:
+          type: string
+          title: Parser
+      type: object
+      required:
+      - status
+      - parser
+      title: Health
+    MaterialOut:
+      properties:
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+        kind:
+          type: string
+          title: Kind
+        unit:
+          type: string
+          title: Unit
+        thickness_mm:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Thickness Mm
+        price_kop:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Price Kop
+        price_date:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Price Date
+        waste_factor:
+          type: string
+          title: Waste Factor
+      type: object
+      required:
+      - code
+      - name
+      - kind
+      - unit
+      - thickness_mm
+      - price_kop
+      - price_date
+      - waste_factor
+      title: MaterialOut
+    PartOut:
+      properties:
+        code:
+          type: string
+          title: Code
+        name:
+          type: string
+          title: Name
+        length_mm:
+          type: integer
+          title: Length Mm
+        width_mm:
+          type: integer
+          title: Width Mm
+        qty:
+          type: integer
+          title: Qty
+        material_code:
+          type: string
+          title: Material Code
+        edge_long:
+          type: integer
+          title: Edge Long
+        edge_short:
+          type: integer
+          title: Edge Short
+      type: object
+      required:
+      - code
+      - name
+      - length_mm
+      - width_mm
+      - qty
+      - material_code
+      - edge_long
+      - edge_short
+      title: PartOut
+    Problem:
+      properties:
+        message:
+          type: string
+          title: Message
+        problems:
+          items:
+            type: string
+          type: array
+          title: Problems
+      type: object
+      required:
+      - message
+      title: Problem
+      description: 'Ошибка предметной области: что не так и список конкретных причин.'
+    RequestCreate:
+      properties:
+        raw_text:
+          type: string
+          maxLength: 5000
+          title: Raw Text
+          description: Свободный текст заявки
+          default: ''
+        fields:
+          additionalProperties:
+            type: string
+            maxLength: 255
+          propertyNames:
+            $ref: '#/components/schemas/FieldKey'
+          type: object
+          title: Fields
+          description: Поля, введённые человеком вручную
+      type: object
+      title: RequestCreate
+    RequestOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        raw_text:
+          type: string
+          title: Raw Text
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        status_label:
+          type: string
+          title: Status Label
+        parser:
+          type: string
+          title: Parser
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        fields:
+          items:
+            $ref: '#/components/schemas/FieldOut'
+          type: array
+          title: Fields
+        missing:
+          items:
+            type: string
+          type: array
+          title: Missing
+          description: Что мешает перевести заявку в «разобрана»
+        history:
+          items:
+            $ref: '#/components/schemas/StatusChangeOut'
+          type: array
+          title: History
+      type: object
+      required:
+      - id
+      - raw_text
+      - status
+      - status_label
+      - parser
+      - created_at
+      - fields
+      - missing
+      - history
+      title: RequestOut
+    RequestStatus:
+      type: string
+      enum:
+      - new
+      - parsed
+      - designed
+      - estimated
+      - sent
+      title: RequestStatus
+    RequestSummary:
+      properties:
+        id:
+          type: integer
+          title: Id
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        status_label:
+          type: string
+          title: Status Label
+        client_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Name
+        product_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product Type
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - status
+      - status_label
+      - client_name
+      - product_type
+      - created_at
+      title: RequestSummary
+    StatusChangeOut:
+      properties:
+        from_status:
+          $ref: '#/components/schemas/RequestStatus'
+        to_status:
+          $ref: '#/components/schemas/RequestStatus'
+        changed_at:
+          type: string
+          format: date-time
+          title: Changed At
+      type: object
+      required:
+      - from_status
+      - to_status
+      - changed_at
+      title: StatusChangeOut
+    TransitionIn:
+      properties:
+        to:
+          $ref: '#/components/schemas/RequestStatus'
+      type: object
+      required:
+      - to
+      title: TransitionIn
