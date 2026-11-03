@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_AsIs" targetNamespace="https://example.invalid/orderflow/bpmn" exporter="orderflow-docs" exporterVersion="1.0">
+  <bpmn:collaboration id="Collaboration_AsIs">
+    <bpmn:participant id="Participant_AsIs" name="Мастерская «Кедр»: заявка → смета (как сейчас)" processRef="Process_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_AsIs" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_AsIs">
+      <bpmn:lane id="Lane_Client" name="Клиент">
+        <bpmn:flowNodeRef>Start_Need</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Answer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Receive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Got</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Manager" name="Менеджер">
+        <bpmn:flowNodeRef>Task_Copy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Enough</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Estimate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Send</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Designer" name="Конструктор">
+        <bpmn:flowNodeRef>Task_Parts</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Head" name="Руководитель">
+        <bpmn:flowNodeRef>Task_Check</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Ok</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Need" name="Нужна мебель">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Write" name="Написать заявку в почту или мессенджер">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Copy" name="Переписать заявку в таблицу">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gw_Enough" name="Данных хватает?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Answer" name="Ответить на уточняющие вопросы">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Parts" name="Посчитать детали вручную">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Estimate" name="Посчитать смету в своей таблице">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Check" name="Сверить цены и итог">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gw_Ok" name="Итог верный?">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Send" name="Отправить итог в мессенджере">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Receive" name="Получить смету">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="End_Got" name="Смета у клиента">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_Need" targetRef="Task_Write" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Write" targetRef="Task_Copy" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Copy" targetRef="Gw_Enough" />
+    <bpmn:sequenceFlow id="Flow_4" name="нет" sourceRef="Gw_Enough" targetRef="Task_Answer" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_Answer" targetRef="Task_Copy" />
+    <bpmn:sequenceFlow id="Flow_6" name="да" sourceRef="Gw_Enough" targetRef="Task_Parts" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_Parts" targetRef="Task_Estimate" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_Estimate" targetRef="Task_Check" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_Check" targetRef="Gw_Ok" />
+    <bpmn:sequenceFlow id="Flow_10" name="нет" sourceRef="Gw_Ok" targetRef="Task_Estimate" />
+    <bpmn:sequenceFlow id="Flow_11" name="да" sourceRef="Gw_Ok" targetRef="Task_Send" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_Send" targetRef="Task_Receive" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_Receive" targetRef="End_Got" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_AsIs">
+    <bpmndi:BPMNPlane id="Plane_AsIs" bpmnElement="Collaboration_AsIs">
+      <bpmndi:BPMNShape id="Participant_AsIs_di" bpmnElement="Participant_AsIs" isHorizontal="true">
+        <dc:Bounds x="40" y="40" width="1925" height="560" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Client_di" bpmnElement="Lane_Client" isHorizontal="true">
+        <dc:Bounds x="70" y="40" width="1895" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Manager_di" bpmnElement="Lane_Manager" isHorizontal="true">
+        <dc:Bounds x="70" y="180" width="1895" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Designer_di" bpmnElement="Lane_Designer" isHorizontal="true">
+        <dc:Bounds x="70" y="320" width="1895" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Head_di" bpmnElement="Lane_Head" isHorizontal="true">
+        <dc:Bounds x="70" y="460" width="1895" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Need_di" bpmnElement="Start_Need">
+        <dc:Bounds x="172" y="92" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="142" y="132" width="96" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Write_di" bpmnElement="Task_Write">
+        <dc:Bounds x="295" y="75" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Copy_di" bpmnElement="Task_Copy">
+        <dc:Bounds x="460" y="215" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Enough_di" bpmnElement="Gw_Enough" isMarkerVisible="true">
+        <dc:Bounds x="660" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="630" y="279" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Answer_di" bpmnElement="Task_Answer">
+        <dc:Bounds x="790" y="75" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Parts_di" bpmnElement="Task_Parts">
+        <dc:Bounds x="790" y="355" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Estimate_di" bpmnElement="Task_Estimate">
+        <dc:Bounds x="955" y="215" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Check_di" bpmnElement="Task_Check">
+        <dc:Bounds x="1120" y="495" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Ok_di" bpmnElement="Gw_Ok" isMarkerVisible="true">
+        <dc:Bounds x="1320" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1290" y="559" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Send_di" bpmnElement="Task_Send">
+        <dc:Bounds x="1450" y="215" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Receive_di" bpmnElement="Task_Receive">
+        <dc:Bounds x="1615" y="75" width="120" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Got_di" bpmnElement="End_Got">
+        <dc:Bounds x="1822" y="92" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1792" y="132" width="96" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="208" y="110" />
+        <di:waypoint x="295" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="355" y="145" />
+        <di:waypoint x="355" y="250" />
+        <di:waypoint x="460" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="580" y="250" />
+        <di:waypoint x="660" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="685" y="225" />
+        <di:waypoint x="685" y="110" />
+        <di:waypoint x="790" y="110" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="691" y="205" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="850" y="145" />
+        <di:waypoint x="850" y="194" />
+        <di:waypoint x="520" y="194" />
+        <di:waypoint x="520" y="215" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="685" y="275" />
+        <di:waypoint x="685" y="390" />
+        <di:waypoint x="790" y="390" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="691" y="255" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="850" y="355" />
+        <di:waypoint x="850" y="250" />
+        <di:waypoint x="955" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1015" y="285" />
+        <di:waypoint x="1015" y="530" />
+        <di:waypoint x="1120" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1240" y="530" />
+        <di:waypoint x="1320" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1345" y="505" />
+        <di:waypoint x="1345" y="306" />
+        <di:waypoint x="1015" y="306" />
+        <di:waypoint x="1015" y="285" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1351" y="485" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1345" y="505" />
+        <di:waypoint x="1345" y="250" />
+        <di:waypoint x="1450" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1351" y="485" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1510" y="215" />
+        <di:waypoint x="1510" y="110" />
+        <di:waypoint x="1615" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1735" y="110" />
+        <di:waypoint x="1822" y="110" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
