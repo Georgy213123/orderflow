@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: OrderFlow API
   description: 'Мастерская корпусной мебели: заявка → конструкция изделия → смета. Демо, данные вымышленные.'
-  version: 0.3.1
+  version: 0.3.3
 paths:
   /api/health:
     get:
@@ -17,12 +17,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
-        '422':
-          description: Неверный запрос или данные не проходят проверку
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Problem'
   /api/materials:
     get:
       tags:
@@ -424,11 +418,13 @@ components:
           default: 16
         shelves:
           type: integer
+          maximum: 10.0
           minimum: 0.0
           title: Shelves
           default: 0
         doors:
           type: integer
+          maximum: 4.0
           minimum: 0.0
           title: Doors
           default: 0

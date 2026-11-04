@@ -3,13 +3,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import router
+from app.api.routes import router, service_router
 from app.config import get_settings
 from app.domain.parser import build_parser
 from app.integrations.notifier import LogNotifier
 from app.services import DomainError
 
-API_VERSION = "0.3.1"
+API_VERSION = "0.3.3"
 
 
 def create_app() -> FastAPI:
@@ -47,6 +47,7 @@ def create_app() -> FastAPI:
             status_code=422, content={"message": "неверный запрос", "problems": problems}
         )
 
+    app.include_router(service_router)
     app.include_router(router)
     return app
 

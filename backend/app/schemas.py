@@ -4,6 +4,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.domain.design import MAX_DOORS, MAX_SHELVES
 from app.domain.fields import FieldKey, FieldSource
 from app.domain.status import RequestStatus
 
@@ -75,8 +76,8 @@ class DesignParamsIn(BaseModel):
     height_mm: int = Field(ge=1, le=10_000)
     depth_mm: int = Field(ge=1, le=10_000)
     thickness_mm: int = 16
-    shelves: int = Field(0, ge=0)
-    doors: int = Field(0, ge=0)
+    shelves: int = Field(0, ge=0, le=MAX_SHELVES)
+    doors: int = Field(0, ge=0, le=MAX_DOORS)
     back_panel: bool = True
     board_code: str = "LDSP16-WHITE"
     edge_code: str = "EDGE04-WHITE"

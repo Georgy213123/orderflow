@@ -154,3 +154,26 @@ def test_r10_send_actually_notifies_client(client: TestClient) -> None:
     r = client.post(f"/api/requests/{req_id}/transition", json={"to": "sent"})
     assert r.status_code == 200
     assert notifier.sent == [(req_id, "anna@example.com", 1_233_196)]
+
+
+def test_bug12_foreign_alembic_version_does_not_break_setup(engine: Engine) -> None:
+    from alembic import command
+    from alembic.config import Config
+
+    from tests.db_guard import reset_public_schema
+    from tests.integration.conftest import BACKEND
+
+    url = engine.url.render_as_string(hide_password=False)
+    reset_public_schema(url)
+    with engine.begin() as conn:
+        conn.execute(text("CREATE TABLE alembic_version (version_num varchar(32) NOT NULL)"))
+        conn.execute(text("INSERT INTO alembic_version VALUES ('foreign_app_rev')"))
+    reset_public_schema(url)
+    cfg = Config(str(BACKEND / "alembic.ini"))
+    cfg.set_main_option("script_location", str(BACKEND / "alembic"))
+    cfg.attributes["database_url"] = url
+    command.upgrade(cfg, "head")
+    with Session(engine) as s:
+        from app.seed import seed_materials
+
+        seed_materials(s)

@@ -110,6 +110,7 @@ test("полный путь: заявка → конструкция → сме�
   await expect(estimate).toContainText("21,97");
   await expect(estimate).toContainText("×1,10");
   await expect(estimate).not.toContainText("9,125152");
+  await expect(estimate).toContainText("ХДФ (задняя стенка)");
   await expect(page.getByTestId("status")).toHaveAttribute(
     "data-status",
     "estimated",

@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.db import get_session
 from app.main import create_app
 from app.seed import seed_materials
-from tests.db_guard import require_test_database
+from tests.db_guard import require_test_database, reset_public_schema
 
 BACKEND = Path(__file__).resolve().parents[2]
 
@@ -28,7 +28,8 @@ def engine() -> Iterator[Engine]:
     cfg = Config(str(BACKEND / "alembic.ini"))
     cfg.set_main_option("script_location", str(BACKEND / "alembic"))
     cfg.attributes["database_url"] = url
-    command.downgrade(cfg, "base")
+    # На базе с чужой alembic_version `downgrade base` верит чужой версии: схему пересоздаём.
+    reset_public_schema(url)
     command.upgrade(cfg, "head")
     eng = create_engine(url)
     with sessionmaker(bind=eng)() as s:

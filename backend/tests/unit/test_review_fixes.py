@@ -60,3 +60,17 @@ def test_r09_contract_declares_problem_for_every_422() -> None:
         != "#/components/schemas/Problem"
     ]
     assert wrong == []
+
+
+@pytest.mark.parametrize(
+    ("field", "value"), [("shelves", 11), ("shelves", 10**9), ("doors", 5), ("doors", 10**9)]
+)
+def test_bug12_design_input_has_upper_limits(field: str, value: int) -> None:
+    body = {"width_mm": 1200, "height_mm": 2100, "depth_mm": 600, field: value}
+    r = TestClient(app).put("/api/requests/1/design", json=body)
+    assert r.status_code == 422
+    assert set(r.json()) == {"message", "problems"}
+
+
+def test_bug12_health_contract_has_no_422() -> None:
+    assert "422" not in app.openapi()["paths"]["/api/health"]["get"]["responses"]

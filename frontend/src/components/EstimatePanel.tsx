@@ -3,7 +3,7 @@ import { formatDate, formatFactor, formatKop, formatQuantity, unitLabel } from "
 
 const KIND_LABEL: Record<string, string> = {
   board: "Плита",
-  back: "Задняя стенка",
+  back: "ХДФ (задняя стенка)",
   edge: "Кромка",
   hardware: "Фурнитура",
 };

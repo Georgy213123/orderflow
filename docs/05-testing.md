@@ -39,8 +39,8 @@ macOS, PostgreSQL 16, Chromium из Playwright 1.64.
 | Команда | Результат |
 |---|---|
 | `make lint` | ruff, mypy strict, eslint, tsc, prettier — без замечаний |
-| `make test` | pytest 82 passed за 4,79 с (67 unit, 15 integration), покрытие `app/` 97 %; Vitest 18 passed |
-| `make e2e` | 7 passed, 1 skipped за 11,1 с: мобильный сценарий на десктопе пропускается намеренно |
+| `make test` | pytest 88 passed за 5,64 с (72 unit, 16 integration), покрытие `app/` 97 %; Vitest 18 passed |
+| `make e2e` | 7 passed, 1 skipped за 12,3 с: мобильный сценарий на десктопе пропускается намеренно |
 | `make audit` (03.11) | pip-audit чисто; npm: 12 moderate в инструментах ESLint |
 
-Не проверено: `make up`, на машине сборки нет Docker.
+Стенд целиком (`docker compose up --wait`, healthcheck у базы и API) поднимает отдельный job CI.
