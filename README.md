@@ -1,90 +1,78 @@
 # OrderFlow — заявка → конструкция → смета
 
-Платформа для вымышленной мастерской корпусной мебели «Кедр»: менеджер вставляет текст
-заявки из письма, конструктор задаёт параметры шкафа, система строит спецификацию
-деталей и считает смету по единому справочнику цен.
+В мебельной мастерской заявка приходит текстом: «шкаф 120 на 210, глубина 60, две двери».
+Её переписывают в таблицу, детали считают на бумаге, смету — по своей копии прайса.
+Ответ уходит через несколько дней. OrderFlow разбирает текст в поля с пометкой
+источника, строит из параметров шкафа спецификацию деталей и считает смету по одному
+справочнику цен. Мастерская «Кедр», люди и цены вымышлены.
 
-```
- текст заявки ──► разбор ──► поля «найдено в тексте» ──► подтверждение человеком
-                                                                │
- смета ◄── справочник цен ◄── спецификация деталей ◄── параметры шкафа
-   │
-   └─► статус «смета готова» ──► отправка клиенту
-```
+<img src="docs/img/intake-sources-desktop.png" alt="Заявка из текста: у полей источник «найдено в тексте»">
 
-Кейс показывает системный анализ (BPMN as-is и to-be, use case, FR/NFR, истории
-с Given/When/Then), проектирование API с контрактом, точную арифметику денег и
-тесты на трёх уровнях. Компания, люди, цены и числа боли вымышлены.
+<p>
+<img src="docs/img/estimate-desktop.png" alt="Спецификация и смета, итог 12 331,96 ₽" width="560">
+<img src="docs/img/intake-mobile.png" alt="Форма заявки на телефоне" width="260">
+</p>
 
-## Карта модулей продукта
+## Карта модулей
 
-| Модуль | Назначение | В демо |
+| Модуль | Что делает | В демо |
 |---|---|---|
-| Приём заявки | форма и разбор свободного текста; у каждого поля источник, предположение разбора ждёт подтверждения | ✅ |
-| Конструкция изделия | параметрическая модель шкафа → спецификация деталей с кромкой, проверка инвариантов | ✅ |
-| Смета | площадь плиты, кромка, фурнитура, коэффициент запаса; неполный итог и цены разных дат | ✅ |
-| Статусы заявки | новая → разобрана → конструкция готова → смета готова → отправлена клиенту, переход проверяет сервер | ✅ |
-| Маршрут производства | задания по ролям и участкам цеха | ⬜ |
-| Документы заказа | спецификация и бланк для цеха | ⬜ |
-| Оптимизация раскроя | раскладка деталей по листам | ⬜ |
-| Склад и снабжение | остатки плиты и фурнитуры, заказ поставщику | ⬜ |
-| Обмен с учётной системой | выгрузка сметы и заказа; в демо только интерфейс `AccountingExporter` и заглушка | ⬜ |
-| Личный кабинет клиента | статус заказа и смета для клиента | ⬜ |
+| Приём заявки | разбор текста, у поля источник, предположение ждёт подтверждения | ✅ |
+| Конструкция | параметры шкафа → детали с кромкой, проверка инвариантов | ✅ |
+| Смета | плита, кромка, фурнитура, запас; неполный итог, цены разных дат | ✅ |
+| Статусы | от «новая» до «отправлена», переход проверяет сервер | ✅ |
+| Производство, документы для цеха, раскрой, склад | | ⬜ |
+| Обмен с учётной системой | только интерфейс `AccountingExporter` и заглушка | ⬜ |
+| Кабинет клиента | | ⬜ |
 
-Разбор текста работает правилами и регулярными выражениями. Языковая модель
-подключается через тот же интерфейс `RequestParser` (ADR-0002), в демо — заглушка.
+## Решения и компромиссы
+
+- **Разбор правилами, модель за интерфейсом.** Правила работают без сети. Модель
+  подключается через тот же `RequestParser`, и её ответ тоже приходит неподтверждённым ([ADR-0002](docs/03-design/adr/0002-external-services-behind-adapters.md)).
+- **Человек подтверждает каждое найденное поле.** Лишний клик, зато ошибка разбора не
+  доходит до сметы.
+- **Деньги в целых копейках, количества в `Decimal`.** Первая версия во float теряла
+  копейку. Плата за это: итоги считает только сервер ([ADR-0003](docs/03-design/adr/0003-money-in-kopecks.md)).
+- **Статус меняется как следствие действия.** `PATCH status` отверг: таблица переходов
+  на сервере, пропуск шага — 409 ([ADR-0004](docs/03-design/adr/0004-server-side-state-machine.md)).
+- **Блокировка строки заявки** (`SELECT … FOR UPDATE`) появилась после ревью. Очередь не
+  завёл: смета считается за миллисекунды.
+
+## Что не сделано и почему
+
+- Адаптер языковой модели — заглушка с TODO: сначала замер доли найденных полей на реальных заявках.
+- Нет входа и ролей, один интерфейс на всех. Для нескольких сотрудников это первый шаг.
+- Экрана справочника цен нет, цены в начальных данных. Отправка сметы пишет в журнал.
+- Модель конструкции одна — шкаф. Типы ответов API на фронте описаны руками, клиент по
+  `openapi.yaml` не генерируется.
+- `make up` не запускал: на машине сборки нет Docker. Остальное проверено на локальном PostgreSQL 16.
 
 ## Запуск
 
-Docker:
-
 ```bash
-make up          # postgres :55301, backend :8301, frontend :5301
-```
+make up                  # Docker: postgres :55301, backend :8301, frontend :5301
 
-Без Docker, с локальным PostgreSQL 16:
-
-```bash
-make install
+make install             # без Docker, нужен PostgreSQL 16
 export DATABASE_URL=postgresql+psycopg://postgres@localhost:55301/orderflow
-make dev         # миграции, справочник, API и интерфейс
+make dev                 # миграции, справочник, API и интерфейс
+
+make lint test e2e       # ruff, mypy strict, eslint, tsc; pytest и Vitest; Playwright
 ```
 
-Интерфейс — http://localhost:5301, документация API — http://localhost:8301/docs.
+Интерфейс — http://localhost:5301, API — http://localhost:8301/docs.
+`make test` ждёт базу `orderflow_test` (`TEST_DATABASE_URL`).
 
-## Проверки
+## Как это сделано
 
-```bash
-make lint        # ruff, mypy strict, eslint, tsc, prettier
-make test        # pytest unit + integration (TEST_DATABASE_URL), vitest
-make e2e         # Playwright: десктоп 1440×900 и телефон 390×844
-make audit       # pip-audit, npm audit
-make openapi     # выгрузить контракт; тест сверяет файл с кодом
-```
+Код и тесты писал Claude Code по моим брифам, аналитику и приёмку делал я. Ревьюил Codex: 10 находок (4 P1, 6 P2), воспроизвелись все, на каждую сначала падающий
+тест. Мои тесты проверяли один запрос за раз и пропустили гонки. Подробно —
+[04-ai-development](docs/04-ai-development.md).
 
 ## Документация
 
-| Раздел | Что внутри |
-|---|---|
-| [01-problem](docs/01-problem.md) | контекст, боль, роли, критерии успеха, границы |
-| [02-analysis](docs/02-analysis/) | [BPMN as-is](docs/02-analysis/as-is.bpmn) и [to-be](docs/02-analysis/to-be.bpmn), [процессы](docs/02-analysis/processes.md), [use case](docs/02-analysis/use-cases.md), [FR/NFR](docs/02-analysis/requirements.md), [истории](docs/02-analysis/user-stories.md) |
-| [03-design](docs/03-design/) | [C4](docs/03-design/architecture.md), [ER](docs/03-design/er.md), [openapi.yaml](docs/03-design/openapi.yaml), [ADR](docs/03-design/adr/) |
-| [04-ai-development](docs/04-ai-development.md) | декомпозиция на задачи для агентов, конвейер, разбор задачи «смета» |
-| [05-testing](docs/05-testing.md) | пирамида, трассировка US → тест, отчёт прогона |
-| [06-bugs](docs/06-bugs.md) | пять багов с регрессионными тестами |
-| [07-releases](docs/07-releases.md) | путь v0.1 → v1.0, [CHANGELOG](docs/CHANGELOG.md) |
+[01-problem](docs/01-problem.md) · [02-analysis](docs/02-analysis/): BPMN [as-is](docs/02-analysis/as-is.bpmn) и [to-be](docs/02-analysis/to-be.bpmn), [процессы](docs/02-analysis/processes.md), [use case](docs/02-analysis/use-cases.md), [FR/NFR](docs/02-analysis/requirements.md), [истории](docs/02-analysis/user-stories.md) ·
+[03-design](docs/03-design/): [C4](docs/03-design/architecture.md), [ER](docs/03-design/er.md), [openapi.yaml](docs/03-design/openapi.yaml), [ADR](docs/03-design/adr/) ·
+[04-ai-development](docs/04-ai-development.md) · [05-testing](docs/05-testing.md) · [06-bugs](docs/06-bugs.md) · [07-releases](docs/07-releases.md) · [CHANGELOG](docs/CHANGELOG.md)
 
-## Стек
-
-Python 3.12, FastAPI, SQLAlchemy 2, Alembic, PostgreSQL 16, pydantic v2, uv ·
-React 19, TypeScript, Vite · pytest, Vitest, Testing Library, Playwright ·
-ruff, mypy, ESLint, Prettier · Docker Compose.
-
-## Структура
-
-```
-backend/    FastAPI: app/domain — чистая логика, app/services.py — сценарии, alembic — миграции
-frontend/   React: заявка, конструкция, смета на одном экране
-e2e/        Playwright
-docs/       01…07 по канону витрины
-```
+Стек: Python 3.12, FastAPI, SQLAlchemy 2, Alembic, PostgreSQL 16 · React 19, TypeScript,
+Vite · pytest, Vitest, Playwright · Docker Compose.
