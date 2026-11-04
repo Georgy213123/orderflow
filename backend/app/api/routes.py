@@ -47,6 +47,9 @@ ParserDep = Annotated[RequestParser, Depends(get_parser)]
 NotifierDep = Annotated[ClientNotifier, Depends(get_notifier)]
 
 E404: dict[int | str, dict[str, Any]] = {404: {"model": Problem, "description": "Не найдено"}}
+E502: dict[int | str, dict[str, Any]] = {
+    502: {"model": Problem, "description": "Уведомление клиенту не отправлено, статус прежний"}
+}
 E409: dict[int | str, dict[str, Any]] = {
     409: {"model": Problem, "description": "Недопустимо в текущем статусе"}
 }
@@ -96,7 +99,9 @@ def update_field(
     return services.request_out(services.update_field(session, request_id, key, body.value))
 
 
-@router.post("/requests/{request_id}/transition", tags=["requests"], responses={**E404, **E409})
+@router.post(
+    "/requests/{request_id}/transition", tags=["requests"], responses={**E404, **E409, **E502}
+)
 def transition(
     request_id: int, body: TransitionIn, session: SessionDep, notifier: NotifierDep
 ) -> RequestOut:

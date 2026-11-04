@@ -45,6 +45,13 @@
 - **Фикс.** `le=MAX_SHELVES` и `le=MAX_DOORS` в `DesignParamsIn`, значения берутся из правил конструкции.
 - **Тест.** [`test_review_fixes.py::test_bug12_design_input_has_upper_limits`](../backend/tests/unit/test_review_fixes.py)
 
+## BUG-13. Статус «отправлена» без письма (ревью OF-01)
+
+- **Симптом.** Уведомление падает или процесс обрывается после фиксации статуса: заявка `sent`, письма нет, повтор даёт 409.
+- **Причина.** Статус фиксировался до вызова notifier.
+- **Фикс.** Сначала `send_estimate` с ключом `id заявки:id сметы`, статус `sent` только после успеха; при ошибке откат и 502, повтор разрешён. Заглушка помнит ключи и не шлёт дубль.
+- **Тест.** [`test_review_fixes.py::test_bug13_failed_notifier_keeps_status_and_retry_works`](../backend/tests/integration/test_review_fixes.py), `test_bug13_same_key_does_not_duplicate`
+
 BUG-04 (повторное подтверждение сбрасывало источник) и BUG-11 (нетто «9,125152» и запас «×1,1»
 в смете, тест `format.test.ts`) — в [CHANGELOG](CHANGELOG.md),
 ещё 9 находок ревью — в [04-ai-development](04-ai-development.md).

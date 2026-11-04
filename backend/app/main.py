@@ -9,7 +9,7 @@ from app.domain.parser import build_parser
 from app.integrations.notifier import LogNotifier
 from app.services import DomainError
 
-API_VERSION = "0.3.3"
+API_VERSION = "0.3.4"
 
 
 def create_app() -> FastAPI:

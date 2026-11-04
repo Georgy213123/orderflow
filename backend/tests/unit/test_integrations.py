@@ -9,7 +9,7 @@ from tests.unit.test_estimate import price_list
 
 def test_us06_log_notifier_records_sent_estimate() -> None:
     notifier = LogNotifier()
-    ref = notifier.send_estimate(7, "anna@example.com", 1_233_196)
+    ref = notifier.send_estimate(7, "anna@example.com", 1_233_196, "7:1")
     assert ref == "log-7"
     assert notifier.sent == [(7, "anna@example.com", 1_233_196)]
 

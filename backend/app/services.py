@@ -240,11 +240,20 @@ def transition(
             raise DomainError(409, "смета неполная: отправлять клиенту нельзя")
         values = {f.key: f.value for f in req.fields}
         contact = values.get(FieldKey.EMAIL.value) or values.get(FieldKey.PHONE.value, "")
+        try:
+            check_transition(RequestStatus(req.status), target)
+        except TransitionError as e:
+            raise DomainError(409, e.reason) from e
+        # Сначала отправка, потом статус (BUG-13): сбой не должен оставить «отправлена»
+        # без письма. Строка заявки заблокирована, параллельный повтор ждёт и видит итог.
+        # Ключ идемпотентности: потерянное подтверждение не приведёт к дубликату письма.
+        try:
+            notifier.send_estimate(req.id, contact, est.total_kop, f"{req.id}:{est.id}")
+        except Exception as e:
+            session.rollback()
+            raise DomainError(502, "не удалось отправить смету клиенту, статус не изменён") from e
         _move(session, req, target)
         session.commit()
-        # Уведомление — после фиксации статуса: при откате транзакции клиент не получит
-        # смету, а повторный запрос под блокировкой увидит «отправлена» и получит 409.
-        notifier.send_estimate(req.id, contact, est.total_kop)
         return _load(session, request_id)
     elif target in (RequestStatus.DESIGNED, RequestStatus.ESTIMATED):
         raise DomainError(409, "этот статус ставится сохранением конструкции или расчётом сметы")

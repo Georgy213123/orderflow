@@ -115,3 +115,63 @@ describe("App: переключение заявок", () => {
     expect(screen.getByRole("button", { name: /№2/ })).toHaveClass("active");
   });
 });
+
+describe("App: параллельные сохранения полей", () => {
+  it("OF-02: ответ раннего сохранения, пришедший позже, не стирает свежие поля", async () => {
+    let open!: () => void;
+    const gate = new Promise<void>((r) => (open = r));
+    const stored: Record<string, string> = {};
+    const puts: string[] = [];
+    const detail = () => ({
+      ...req(1),
+      status: "new",
+      status_label: "новая",
+      fields: Object.entries(stored).map(([key, value]) => ({
+        key,
+        label: key,
+        value,
+        source: "manual",
+        confirmed: true,
+        fragment: null,
+        required: false,
+      })),
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (url === "/api/materials") return json([]);
+        if (url === "/api/requests") return json(summaries);
+        const put = url.match(/^\/api\/requests\/1\/fields\/(\w+)$/);
+        if (put && init?.method === "PUT") {
+          const key = put[1] as string;
+          puts.push(key);
+          stored[key] = JSON.parse(String(init.body)).value;
+          const snapshot = detail(); // ответ фиксируется в момент обработки запроса
+          if (puts.length === 1) await gate; // ответ на первое сохранение приходит последним
+          return json(snapshot);
+        }
+        if (url.endsWith("/design") || url.endsWith("/estimate"))
+          return json({ message: "нет" }, 404);
+        return json(detail());
+      }),
+    );
+    render(<App />);
+    await userEvent.click(await screen.findByRole("button", { name: /№1/ }));
+    await screen.findByRole("heading", { name: "1. Заявка №1" });
+
+    await userEvent.type(screen.getByLabelText(/Клиент/), "Анна");
+    await userEvent.click(
+      within(screen.getByTestId("field-client_name")).getByRole("button", { name: "Сохранить" }),
+    );
+    await userEvent.type(screen.getByLabelText(/Телефон/), "+79001234567");
+    await userEvent.click(
+      within(screen.getByTestId("field-phone")).getByRole("button", { name: "Сохранить" }),
+    );
+    // Второе изменение ждёт первого: параллельно запросы не уходят.
+    expect(puts).toEqual(["client_name"]);
+    open();
+    await waitFor(() => expect(puts).toEqual(["client_name", "phone"]));
+    await waitFor(() => expect(screen.getByLabelText(/Телефон/)).toHaveValue("+79001234567"));
+    expect(screen.getByLabelText(/Клиент/)).toHaveValue("Анна");
+  });
+});

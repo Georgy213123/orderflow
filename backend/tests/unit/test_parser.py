@@ -87,3 +87,16 @@ def test_fragment_keeps_whole_word() -> None:
     parsed = RuleBasedParser().parse(SAMPLE)
     assert parsed[FieldKey.SHELVES].fragment == "4 полки"
     assert parsed[FieldKey.DOORS].fragment == "две двери"
+
+
+def test_of03_readme_example_is_fully_parsed() -> None:
+    """Пример из вступления README дословно: «N на M» — ширина и высота, см → мм."""
+    parsed = RuleBasedParser().parse("шкаф 120 на 210, глубина 60, две двери")
+    assert {k: v.value for k, v in parsed.items()} == {
+        FieldKey.PRODUCT_TYPE: "шкаф",
+        FieldKey.WIDTH_MM: "1200",
+        FieldKey.HEIGHT_MM: "2100",
+        FieldKey.DEPTH_MM: "600",
+        FieldKey.DOORS: "2",
+    }
+    assert parsed[FieldKey.WIDTH_MM].fragment == "120 на 210"

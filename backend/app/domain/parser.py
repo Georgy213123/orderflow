@@ -36,6 +36,8 @@ _UNIT_MM: dict[str, int] = {"мм": 1, "см": 10, "м": 1000}
 _TRIPLE = re.compile(
     rf"{_NUM}\s*[x×хX*]\s*{_NUM}\s*[x×хX*]\s*{_NUM}\s*{_UNIT}(?![а-яё])", re.IGNORECASE
 )
+# «120 на 210»: ширина и высота (OF-03 ревью), глубина — отдельным словом.
+_PAIR = re.compile(rf"{_NUM}\s+на\s+{_NUM}\s*{_UNIT}(?![а-яё])", re.IGNORECASE)
 _SINGLE = {
     FieldKey.WIDTH_MM: re.compile(rf"ширин\w*\s*[:\-–—]?\s*{_NUM}\s*{_UNIT}(?![а-яё])", re.I),
     FieldKey.HEIGHT_MM: re.compile(rf"высот\w*\s*[:\-–—]?\s*{_NUM}\s*{_UNIT}(?![а-яё])", re.I),
@@ -114,6 +116,11 @@ class RuleBasedParser:
                 (FieldKey.WIDTH_MM, FieldKey.HEIGHT_MM, FieldKey.DEPTH_MM), nums, strict=True
             ):
                 found[key] = ParsedField(str(to_mm(num, m.group(4), hint_max=hint)), m.group(0))
+        elif m := _PAIR.search(text):
+            nums = [m.group(1), m.group(2)]
+            hint = max(Decimal(n.replace(",", ".")) for n in nums)
+            for key, num in zip((FieldKey.WIDTH_MM, FieldKey.HEIGHT_MM), nums, strict=True):
+                found[key] = ParsedField(str(to_mm(num, m.group(3), hint_max=hint)), m.group(0))
         for key, pattern in _SINGLE.items():
             if key in found:
                 continue

@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: OrderFlow API
   description: 'Мастерская корпусной мебели: заявка → конструкция изделия → смета. Демо, данные вымышленные.'
-  version: 0.3.3
+  version: 0.3.4
 paths:
   /api/health:
     get:
@@ -213,6 +213,12 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '409':
           description: Недопустимо в текущем статусе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '502':
+          description: Уведомление клиенту не отправлено, статус прежний
           content:
             application/json:
               schema:

@@ -27,6 +27,14 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   // Какая заявка открыта сейчас. Ответы по другой заявке отбрасываются (R-04 ревью).
   const current = useRef<number | null>(null);
+  // Изменения заявки идут по одному, в порядке нажатия: ответ раннего сохранения не может
+  // прийти позже и перетереть свежие поля (OF-02 ревью).
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const enqueue = (task: () => Promise<void>) => {
+    const run = queue.current.then(task, task);
+    queue.current = run.catch(() => undefined);
+    return run;
+  };
 
   const refreshList = useCallback(async () => setItems(await api.listRequests()), []);
 
@@ -89,19 +97,23 @@ export function App() {
     });
 
   const onSaveField = (key: FieldKey, value: string) =>
-    guarded(async () => {
-      if (!request) return;
-      const updated = await api.updateField(request.id, key, value);
-      if (stillOpen(request.id)) setRequest(updated);
-    });
+    guarded(() =>
+      enqueue(async () => {
+        if (!request) return;
+        const updated = await api.updateField(request.id, key, value);
+        if (stillOpen(request.id)) setRequest(updated);
+      }),
+    );
 
   const onMarkParsed = () =>
-    guarded(async () => {
-      if (!request) return;
-      const updated = await api.transition(request.id, "parsed");
-      if (stillOpen(request.id)) setRequest(updated);
-      await refreshList();
-    });
+    guarded(() =>
+      enqueue(async () => {
+        if (!request) return;
+        const updated = await api.transition(request.id, "parsed");
+        if (stillOpen(request.id)) setRequest(updated);
+        await refreshList();
+      }),
+    );
 
   async function onSaveDesign(params: DesignParams) {
     if (!request) return;

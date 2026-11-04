@@ -95,11 +95,13 @@ class BlockingNotifier(LogNotifier):
         self.entered = threading.Event()
         self.release = threading.Event()
 
-    def send_estimate(self, request_id: int, contact: str, total_kop: int) -> str:
+    def send_estimate(
+        self, request_id: int, contact: str, total_kop: int, idempotency_key: str
+    ) -> str:
         if not self.sent:
             self.entered.set()
             self.release.wait(5)
-        return super().send_estimate(request_id, contact, total_kop)
+        return super().send_estimate(request_id, contact, total_kop, idempotency_key)
 
 
 def test_r05_concurrent_send_notifies_once(
@@ -177,3 +179,38 @@ def test_bug12_foreign_alembic_version_does_not_break_setup(engine: Engine) -> N
         from app.seed import seed_materials
 
         seed_materials(s)
+
+
+class FlakyNotifier(LogNotifier):
+    def __init__(self) -> None:
+        super().__init__()
+        self.fail = True
+
+    def send_estimate(
+        self, request_id: int, contact: str, total_kop: int, idempotency_key: str
+    ) -> str:
+        if self.fail:
+            raise ConnectionError("почтовый шлюз недоступен")
+        return super().send_estimate(request_id, contact, total_kop, idempotency_key)
+
+
+def test_bug13_failed_notifier_keeps_status_and_retry_works(client: TestClient) -> None:
+    req_id = estimated_request(client)
+    notifier = FlakyNotifier()
+    client.app.state.notifier = notifier  # type: ignore[attr-defined]
+    r = client.post(f"/api/requests/{req_id}/transition", json={"to": "sent"})
+    assert r.status_code == 502
+    assert client.get(f"/api/requests/{req_id}").json()["status"] == "estimated"
+    notifier.fail = False
+    r = client.post(f"/api/requests/{req_id}/transition", json={"to": "sent"})
+    assert r.status_code == 200
+    assert r.json()["status"] == "sent"
+    assert len(notifier.sent) == 1
+
+
+def test_bug13_same_key_does_not_duplicate() -> None:
+    notifier = LogNotifier()
+    a = notifier.send_estimate(5, "a@example.com", 100, "5:1")
+    b = notifier.send_estimate(5, "a@example.com", 100, "5:1")
+    assert a == b
+    assert len(notifier.sent) == 1
