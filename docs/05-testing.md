@@ -32,15 +32,15 @@
 | US-06 | `test_integrations.py` | `test_us04_incomplete_*` | «смета без цены…» |
 | R-01…R-10 | `test_review_fixes.py`, `App.test.tsx` | `test_review_fixes.py` | — |
 
-## Прогон 2026-11-03, v0.3.1
+## Прогон 2026-11-04, v0.3.2
 
 macOS, PostgreSQL 16, Chromium из Playwright 1.64.
 
 | Команда | Результат |
 |---|---|
 | `make lint` | ruff, mypy strict, eslint, tsc, prettier — без замечаний |
-| `make test` | pytest 82 passed за 4,97 с (67 unit, 15 integration), покрытие `app/` 97 %; Vitest 16 passed |
-| `make e2e` | 7 passed, 1 skipped за 11,8 с: мобильный сценарий на десктопе пропускается намеренно |
-| `make audit` | pip-audit чисто; npm: 12 moderate в инструментах ESLint |
+| `make test` | pytest 82 passed за 4,79 с (67 unit, 15 integration), покрытие `app/` 97 %; Vitest 18 passed |
+| `make e2e` | 7 passed, 1 skipped за 11,1 с: мобильный сценарий на десктопе пропускается намеренно |
+| `make audit` (03.11) | pip-audit чисто; npm: 12 moderate в инструментах ESLint |
 
 Не проверено: `make up`, на машине сборки нет Docker.
