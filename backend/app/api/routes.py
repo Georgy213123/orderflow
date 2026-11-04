@@ -26,7 +26,7 @@ E422_ALL: dict[int | str, dict[str, Any]] = {
     422: {"model": Problem, "description": "Неверный запрос или данные не проходят проверку"}
 }
 # Обработчик RequestValidationError отвечает в формате Problem, контракт должен это
-# говорить для каждого маршрута (R-09 ревью).
+# говорить для каждого маршрута.
 router = APIRouter(prefix="/api", responses=E422_ALL)
 # У health нет входных параметров, 422 в его контракте не бывает (BUG-12 аудита).
 service_router = APIRouter(prefix="/api")

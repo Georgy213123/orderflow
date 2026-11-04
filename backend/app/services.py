@@ -110,7 +110,7 @@ def request_out(req: Request) -> RequestOut:
 
 def _load(session: Session, request_id: int, *, lock: bool = False) -> Request:
     """Заявка с полями и историей. `lock=True` — блокировка строки до конца транзакции:
-    все операции, меняющие заявку, идут по ней последовательно (R-03, R-05 ревью)."""
+    все операции, меняющие заявку, идут по ней последовательно."""
     query = (
         select(Request)
         .where(Request.id == request_id)
@@ -138,7 +138,7 @@ def create_request(
     parsed = parser.parse(raw_text) if raw_text.strip() else {}
     for key, pf in parsed.items():
         if key in manual or len(pf.value) > MAX_FIELD_LEN:
-            continue  # значение длиннее колонки — не предположение, а мусор (R-06)
+            continue  # значение длиннее колонки — не предположение, а мусор
         req.fields.append(
             RequestField(
                 key=key.value,

@@ -17,7 +17,7 @@ export function FieldRow({ def, field, required, editable, onSave }: Props) {
   const id = `field-${def.key}`;
 
   const state = !field ? "empty" : field.confirmed ? "confirmed" : "guess";
-  // Необязательное поле можно убрать, оставив пустым (R-08 ревью).
+  // Необязательное поле можно убрать, оставив пустым.
   const clearing = changed && value.trim() === "" && !required;
   const action = clearing ? "Убрать" : changed ? "Сохранить" : "Подтвердить";
   const canAct =

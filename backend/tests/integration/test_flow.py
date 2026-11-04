@@ -7,7 +7,7 @@ from sqlalchemy import Engine, text
 
 SAMPLE = (
     "Здравствуйте! Нужен шкаф в прихожую 1200х2100х600 мм, 4 полки, две двери. "
-    "Меня зовут Анна Смирнова, телефон +7 (900) 123-45-67, почта anna@example.com"
+    "Меня зовут Анна Смирнова, телефон +7 (900) 000-00-01, почта anna@example.test"
 )
 WARDROBE = {"width_mm": 1200, "height_mm": 2100, "depth_mm": 600, "shelves": 4, "doors": 2}
 
@@ -46,7 +46,7 @@ def test_us01_text_is_parsed_into_unconfirmed_fields(client: TestClient) -> None
 
 
 def test_us01_manual_fields_are_human_and_confirmed(client: TestClient) -> None:
-    req = create(client, "шкаф 1200х2100х600", phone="+79990000000", client_name="Пётр")
+    req = create(client, "шкаф 1200х2100х600", phone="+79000000002", client_name="Пётр")
     by_key = {f["key"]: f for f in req["fields"]}
     assert by_key["phone"]["source"] == "human"
     assert by_key["phone"]["confirmed"]

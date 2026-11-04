@@ -28,7 +28,7 @@ class RequestParser(Protocol):
     def parse(self, text: str) -> dict[FieldKey, ParsedField]: ...
 
 
-# Длина чисел ограничена: размер — до 5 цифр, количество — до 2 (R-07 ревью).
+# Длина чисел ограничена: размер — до 5 цифр, количество — до 2.
 _NUM = r"(?<![\d.,])(\d{1,5}(?:[.,]\d{1,3})?)(?![\d.,]*\d)"
 _UNIT = r"(мм|см|м)?"
 _UNIT_MM: dict[str, int] = {"мм": 1, "см": 10, "м": 1000}
@@ -36,7 +36,7 @@ _UNIT_MM: dict[str, int] = {"мм": 1, "см": 10, "м": 1000}
 _TRIPLE = re.compile(
     rf"{_NUM}\s*[x×хX*]\s*{_NUM}\s*[x×хX*]\s*{_NUM}\s*{_UNIT}(?![а-яё])", re.IGNORECASE
 )
-# «120 на 210»: ширина и высота (OF-03 ревью), глубина — отдельным словом.
+# «120 на 210»: ширина и высота, глубина — отдельным словом.
 _PAIR = re.compile(rf"{_NUM}\s+на\s+{_NUM}\s*{_UNIT}(?![а-яё])", re.IGNORECASE)
 _SINGLE = {
     FieldKey.WIDTH_MM: re.compile(rf"ширин\w*\s*[:\-–—]?\s*{_NUM}\s*{_UNIT}(?![а-яё])", re.I),

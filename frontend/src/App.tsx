@@ -25,10 +25,10 @@ export function App() {
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [designProblems, setDesignProblems] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // Какая заявка открыта сейчас. Ответы по другой заявке отбрасываются (R-04 ревью).
+  // Какая заявка открыта сейчас. Ответы по другой заявке отбрасываются.
   const current = useRef<number | null>(null);
   // Изменения заявки идут по одному, в порядке нажатия: ответ раннего сохранения не может
-  // прийти позже и перетереть свежие поля (OF-02 ревью).
+  // прийти позже и перетереть свежие поля.
   const queue = useRef<Promise<void>>(Promise.resolve());
   const enqueue = (task: () => Promise<void>) => {
     const run = queue.current.then(task, task);
@@ -48,7 +48,7 @@ export function App() {
     setError(null);
     current.current = id;
     // Сразу убираем данные прежней заявки: иначе форма конструкции успеет
-    // инициализироваться чужими размерами (R-02 ревью).
+    // инициализироваться чужими размерами.
     setRequest(null);
     setDesign(null);
     setEstimate(null);

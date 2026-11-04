@@ -137,7 +137,7 @@ def test_r05_concurrent_send_notifies_once(
 
 
 def test_r06_too_long_value_from_text_is_dropped_not_500(client: TestClient) -> None:
-    email = "a" * 260 + "@example.com"
+    email = "a" * 260 + "@example.test"
     req = create(client, f"шкаф 1200х2100х600, почта {email}")
     assert "email" not in {f["key"] for f in req["fields"]}
     assert client.post("/api/requests", json={"fields": {"phone": "1" * 256}}).status_code == 422
@@ -155,7 +155,7 @@ def test_r10_send_actually_notifies_client(client: TestClient) -> None:
     notifier = client.app.state.notifier  # type: ignore[attr-defined]
     r = client.post(f"/api/requests/{req_id}/transition", json={"to": "sent"})
     assert r.status_code == 200
-    assert notifier.sent == [(req_id, "anna@example.com", 1_233_196)]
+    assert notifier.sent == [(req_id, "anna@example.test", 1_233_196)]
 
 
 def test_bug12_foreign_alembic_version_does_not_break_setup(engine: Engine) -> None:
@@ -210,7 +210,7 @@ def test_bug13_failed_notifier_keeps_status_and_retry_works(client: TestClient) 
 
 def test_bug13_same_key_does_not_duplicate() -> None:
     notifier = LogNotifier()
-    a = notifier.send_estimate(5, "a@example.com", 100, "5:1")
-    b = notifier.send_estimate(5, "a@example.com", 100, "5:1")
+    a = notifier.send_estimate(5, "a@example.test", 100, "5:1")
+    b = notifier.send_estimate(5, "a@example.test", 100, "5:1")
     assert a == b
     assert len(notifier.sent) == 1

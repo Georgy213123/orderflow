@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("мобильная форма заявки", () => {
   test.skip(({ isMobile }) => !isMobile, "только мобильный вьюпорт");

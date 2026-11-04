@@ -70,7 +70,7 @@ describe("FieldRow: очистка необязательного поля (R-08
       ...guess,
       key: "email",
       label: "Почта",
-      value: "x@y.z",
+      value: "x@example.test",
       required: false,
     };
     render(

@@ -163,7 +163,7 @@ describe("App: параллельные сохранения полей", () => 
     await userEvent.click(
       within(screen.getByTestId("field-client_name")).getByRole("button", { name: "Сохранить" }),
     );
-    await userEvent.type(screen.getByLabelText(/Телефон/), "+79001234567");
+    await userEvent.type(screen.getByLabelText(/Телефон/), "+79000000001");
     await userEvent.click(
       within(screen.getByTestId("field-phone")).getByRole("button", { name: "Сохранить" }),
     );
@@ -171,7 +171,7 @@ describe("App: параллельные сохранения полей", () => 
     expect(puts).toEqual(["client_name"]);
     open();
     await waitFor(() => expect(puts).toEqual(["client_name", "phone"]));
-    await waitFor(() => expect(screen.getByLabelText(/Телефон/)).toHaveValue("+79001234567"));
+    await waitFor(() => expect(screen.getByLabelText(/Телефон/)).toHaveValue("+79000000001"));
     expect(screen.getByLabelText(/Клиент/)).toHaveValue("Анна");
   });
 });

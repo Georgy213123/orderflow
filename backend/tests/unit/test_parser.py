@@ -7,7 +7,7 @@ from app.domain.parser import LlmRequestParser, RuleBasedParser, build_parser, t
 
 SAMPLE = (
     "Здравствуйте! Нужен шкаф в прихожую 1200х2100х600 мм, 4 полки, две двери. "
-    "Меня зовут Анна Смирнова, телефон +7 (900) 123-45-67, почта anna@example.com"
+    "Меня зовут Анна Смирнова, телефон +7 (900) 000-00-01, почта anna@example.test"
 )
 
 
@@ -24,8 +24,8 @@ def test_us01_sample_request_is_fully_parsed() -> None:
         FieldKey.SHELVES: "4",
         FieldKey.DOORS: "2",
         FieldKey.CLIENT_NAME: "Анна Смирнова",
-        FieldKey.PHONE: "+79001234567",
-        FieldKey.EMAIL: "anna@example.com",
+        FieldKey.PHONE: "+79000000001",
+        FieldKey.EMAIL: "anna@example.test",
     }
 
 
