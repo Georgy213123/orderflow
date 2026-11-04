@@ -1,5 +1,5 @@
 import type { Estimate, RequestDetail } from "../api";
-import { formatDate, formatKop, formatQty, unitLabel } from "../format";
+import { formatDate, formatFactor, formatKop, formatQuantity, unitLabel } from "../format";
 
 const KIND_LABEL: Record<string, string> = {
   board: "Плита",
@@ -61,10 +61,10 @@ export function EstimatePanel({ request, estimate, onCalculate, onSend }: Props)
                 {estimate.lines.map((ln) => (
                   <tr key={ln.material_code} className={ln.amount_kop === null ? "no-price" : ""}>
                     <td>{ln.name}</td>
-                    <td className="num mono">{formatQty(ln.net_quantity)}</td>
-                    <td className="num mono">×{formatQty(ln.waste_factor)}</td>
+                    <td className="num mono">{formatQuantity(ln.net_quantity, ln.unit)}</td>
+                    <td className="num mono">×{formatFactor(ln.waste_factor)}</td>
                     <td className="num mono">
-                      {formatQty(ln.quantity)} {unitLabel(ln.unit)}
+                      {formatQuantity(ln.quantity, ln.unit)} {unitLabel(ln.unit)}
                     </td>
                     <td className="num mono">
                       {ln.price_kop === null ? "нет цены" : formatKop(ln.price_kop)}

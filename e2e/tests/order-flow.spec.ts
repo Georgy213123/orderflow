@@ -104,6 +104,12 @@ test("полный путь: заявка → конструкция → сме�
 
   await page.getByRole("button", { name: "Посчитать смету" }).click();
   await expect(page.getByTestId("estimate-total")).toHaveText("12 331,96 ₽");
+  // Нетто и запас в едином формате: 2 знака для м² и м, ×1,10 вместо ×1,1 (BUG-11).
+  const estimate = page.getByTestId("estimate");
+  await expect(estimate).toContainText("9,13");
+  await expect(estimate).toContainText("21,97");
+  await expect(estimate).toContainText("×1,10");
+  await expect(estimate).not.toContainText("9,125152");
   await expect(page.getByTestId("status")).toHaveAttribute(
     "data-status",
     "estimated",

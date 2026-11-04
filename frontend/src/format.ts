@@ -49,9 +49,30 @@ export function unitLabel(unit: string): string {
   return UNIT[unit] ?? unit;
 }
 
-/** «10.49» → «10,49». Количества приходят строкой (Decimal), в число не переводим. */
-export function formatQty(q: string): string {
-  return q.replace(/\.0+$|(\.\d*?)0+$/, "$1").replace(".", ",");
+/**
+ * Округляет десятичную строку до `digits` знаков, половина вверх, без перевода в число.
+ * Только для показа: расчёт и итоги считает сервер.
+ */
+function roundDecimal(q: string, digits: number): string {
+  const neg = q.startsWith("-");
+  const [intRaw = "0", fracRaw = ""] = (neg ? q.slice(1) : q).split(".");
+  const frac = fracRaw.padEnd(digits + 1, "0");
+  let n = BigInt(intRaw + frac.slice(0, digits));
+  if (Number(frac[digits]) >= 5) n += 1n;
+  const s = n.toString().padStart(digits + 1, "0");
+  const int = s.slice(0, s.length - digits).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const tail = digits ? `,${s.slice(s.length - digits)}` : "";
+  return `${neg && n !== 0n ? "-" : ""}${int}${tail}`;
+}
+
+/** «9.125152» м² → «9,13»; «8.000000» шт. → «8». Количества приходят строкой (Decimal). */
+export function formatQuantity(q: string, unit: string): string {
+  return roundDecimal(q, unit === "pcs" ? 0 : 2);
+}
+
+/** Коэффициент запаса: «1.1» → «1,10». */
+export function formatFactor(f: string): string {
+  return roundDecimal(f, 2);
 }
 
 export function formatDate(iso: string | null): string {
