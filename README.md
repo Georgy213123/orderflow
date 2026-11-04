@@ -1,5 +1,9 @@
 # OrderFlow — заявка → конструкция → смета
 
+[![CI](https://github.com/Georgy213123/orderflow/actions/workflows/ci.yml/badge.svg)](https://github.com/Georgy213123/orderflow/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Georgy213123/orderflow/actions/workflows/codeql.yml/badge.svg)](https://github.com/Georgy213123/orderflow/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 В мебельной мастерской заявка приходит текстом: «шкаф 120 на 210, глубина 60, две двери».
 Её переписывают в таблицу, детали считают на бумаге, смету — по своей копии прайса.
 Ответ уходит через несколько дней. OrderFlow разбирает текст в поля с пометкой
@@ -76,3 +80,8 @@ make lint test e2e       # ruff, mypy strict, eslint, tsc; pytest и Vitest; Pla
 
 Стек: Python 3.12, FastAPI, SQLAlchemy 2, Alembic, PostgreSQL 16 · React 19, TypeScript,
 Vite · pytest, Vitest, Playwright · Docker Compose.
+
+---
+
+Один из трёх кейсов витрины [ai-product-engineering](https://github.com/Georgy213123/ai-product-engineering):
+там же процесс работы с агентами и два других кейса.

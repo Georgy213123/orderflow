@@ -16,3 +16,23 @@ e2e/test-results/
 e2e/blob-report/
 # Локальное окружение
 .env
+
+# Общее
+.env.*
+!.env.example
+*.pem
+*.key
+*.py[cod]
+.venv/
+coverage.xml
+dist/
+.vite/
+playwright-report/
+test-results/
+blob-report/
+probe-report/
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tsbuildinfo

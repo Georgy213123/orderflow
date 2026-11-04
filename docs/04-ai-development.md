@@ -1,7 +1,7 @@
 # 04. Разработка с AI-агентами
 
 Код и тесты писал Claude Code по моим брифам, ревью делал Codex. Постановка, допущения
-и приёмка — мои. Шаблоны брифов — в [`ai-workflow/`](../../../ai-workflow/).
+и приёмка — мои. Шаблоны брифов — в [`ai-workflow/`](https://github.com/Georgy213123/ai-product-engineering/tree/main/ai-workflow).
 
 ## Конвейер задачи
 
