@@ -253,7 +253,7 @@
         <di:waypoint x="1015" y="390" />
         <di:waypoint x="1120" y="390" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1021" y="255" width="60" height="14" />
+          <dc:Bounds x="1021" y="312" width="30" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
@@ -276,7 +276,7 @@
         <di:waypoint x="1345" y="474" />
         <di:waypoint x="1345" y="495" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1681" y="395" width="60" height="14" />
+          <dc:Bounds x="1681" y="450" width="30" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
@@ -295,7 +295,7 @@
         <di:waypoint x="2005" y="670" />
         <di:waypoint x="2110" y="670" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2011" y="395" width="60" height="14" />
+          <dc:Bounds x="2011" y="450" width="30" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">

@@ -32,15 +32,15 @@
 | US-06 | `test_integrations.py` | `test_us04_incomplete_*` | «смета без цены…» |
 | R-01…R-10 | `test_review_fixes.py`, `App.test.tsx` | `test_review_fixes.py` | — |
 
-## Прогон 2026-11-04, v0.3.2
+## Прогон 2026-11-05, v0.3.4
 
-macOS, PostgreSQL 16, Chromium из Playwright 1.64.
+macOS, PostgreSQL 16, Chromium из Playwright 1.64.1.
 
 | Команда | Результат |
 |---|---|
 | `make lint` | ruff, mypy strict, eslint, tsc, prettier — без замечаний |
-| `make test` | pytest 91 passed за 6,73 с (74 unit, 17 integration), покрытие `app/` 97 %; Vitest 19 passed |
-| `make e2e` | 7 passed, 1 skipped за 12,9 с: мобильный сценарий на десктопе пропускается намеренно |
+| `make test` | pytest 91 passed за 6,01 с (73 unit, 18 integration), покрытие `app/` 97 %; Vitest 19 passed |
+| `make e2e` | 7 passed, 1 skipped за 11,1 с: мобильный сценарий на десктопе пропускается намеренно |
 | `make audit` (03.11) | pip-audit чисто; npm: 12 moderate в инструментах ESLint |
 
 Стенд целиком (`docker compose up --wait`, healthcheck у базы и API) поднимает отдельный job CI.
