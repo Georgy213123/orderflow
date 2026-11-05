@@ -38,14 +38,14 @@
 - **Фикс.** Операции, меняющие заявку, берут строку `SELECT … FOR UPDATE` (`app/services.py`).
 - **Тест.** [`test_review_fixes.py::test_r03_estimate_is_not_built_from_replaced_design`](../backend/tests/integration/test_review_fixes.py)
 
-## BUG-12. Нет верхней границы у полок и дверей (внешний аудит)
+## BUG-12. Нет верхней границы у полок и дверей (повторное ревью)
 
 - **Симптом.** `PUT /design` с `shelves: 1000000000` проходил разбор запроса и доходил до расчёта.
 - **Причина.** В схеме `ge=0` без `le`; предел 10 и 4 проверяла только конструкция, уже после входа.
 - **Фикс.** `le=MAX_SHELVES` и `le=MAX_DOORS` в `DesignParamsIn`, значения берутся из правил конструкции.
 - **Тест.** [`test_review_fixes.py::test_bug12_design_input_has_upper_limits`](../backend/tests/unit/test_review_fixes.py)
 
-## BUG-13. Статус «отправлена» без письма (ревью OF-01)
+## BUG-13. Статус «отправлена» без письма (второй круг ревью Codex)
 
 - **Симптом.** Уведомление падает или процесс обрывается после фиксации статуса: заявка `sent`, письма нет, повтор даёт 409.
 - **Причина.** Статус фиксировался до вызова notifier.
@@ -54,4 +54,4 @@
 
 BUG-04 (повторное подтверждение сбрасывало источник) и BUG-11 (нетто «9,125152» и запас «×1,1»
 в смете, тест `format.test.ts`) — в [CHANGELOG](CHANGELOG.md),
-ещё 9 находок ревью — в [04-ai-development](04-ai-development.md).
+все 13 находок ревью Codex — в [04-ai-development](04-ai-development.md).

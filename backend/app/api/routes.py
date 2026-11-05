@@ -28,7 +28,7 @@ E422_ALL: dict[int | str, dict[str, Any]] = {
 # Обработчик RequestValidationError отвечает в формате Problem, контракт должен это
 # говорить для каждого маршрута.
 router = APIRouter(prefix="/api", responses=E422_ALL)
-# У health нет входных параметров, 422 в его контракте не бывает (BUG-12 аудита).
+# У health нет входных параметров, 422 в его контракте не бывает.
 service_router = APIRouter(prefix="/api")
 SessionDep = Annotated[Session, Depends(get_session)]
 
